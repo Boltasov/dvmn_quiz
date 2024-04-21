@@ -1,12 +1,15 @@
 import logging
+import os
+
 from functools import partial
 from enum import Enum
+from dotenv import load_dotenv
 
 import redis
 from telegram import Update, ForceReply, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
 
-from main import get_quiz, get_random_question, get_answer
+from quiz import get_random_question, get_answer
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -95,11 +98,18 @@ def handle_give_up(update: Update, context: CallbackContext, db_connection) -> N
 
 def main() -> None:
     """Start the bot."""
+    load_dotenv()
+
     # connect to db
-    db_connection = redis.Redis(host='redis-17198.c74.us-east-1-4.ec2.cloud.redislabs.com', port=17198, username='default', password='ooQSxegPkdQwVILzMXLBrctzenDcAyo1',
-                                  decode_responses=True)
+    redis_host = os.getenv('REDIS_HOST')
+    redis_port = os.getenv('REDIS_PORT')
+    redis_username = os.getenv('REDIS_USERNAME')
+    redis_password = os.getenv('REDIS_PASSWORD')
+    db_connection = redis.Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password,
+                                decode_responses=True)
     print(db_connection.ping())
 
+    tg_token = os.getenv('TG_TOKEN')
     # Create the Updater and pass it your bot's token.
     updater = Updater("6230042552:AAHJEdU6zGsIywKH-AYJxfDGHKRKsTi3vZo")
 
