@@ -1,11 +1,11 @@
 import logging
 import os
+import redis
 
 from functools import partial
 from enum import Enum
-from dotenv import load_dotenv
 
-import redis
+from dotenv import load_dotenv
 from telegram import Update, ForceReply, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
 
