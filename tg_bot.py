@@ -107,11 +107,10 @@ def main() -> None:
     redis_password = os.getenv('REDIS_PASSWORD')
     db_connection = redis.Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password,
                                 decode_responses=True)
-    print(db_connection.ping())
 
     tg_token = os.getenv('TG_TOKEN')
     # Create the Updater and pass it your bot's token.
-    updater = Updater("6230042552:AAHJEdU6zGsIywKH-AYJxfDGHKRKsTi3vZo")
+    updater = Updater(tg_token)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher

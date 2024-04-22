@@ -1,5 +1,7 @@
+import logging
 import random
 import os
+import redis
 
 from dotenv import load_dotenv
 
@@ -10,7 +12,14 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import get_random_id
 
 
-def echo_keyboard(event, vk_api):
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
+
+logger = logging.getLogger(__name__)
+
+
+def start(event, vk_api):
     keyboard = VkKeyboard(one_time=True)
 
     keyboard.add_button('Новый вопрос', color=VkKeyboardColor.PRIMARY)
@@ -29,6 +38,12 @@ def echo_keyboard(event, vk_api):
 
 if __name__ == "__main__":
     load_dotenv()
+    redis_host = os.getenv('REDIS_HOST')
+    redis_port = os.getenv('REDIS_PORT')
+    redis_username = os.getenv('REDIS_USERNAME')
+    redis_password = os.getenv('REDIS_PASSWORD')
+    db_connection = redis.Redis(host=redis_host, port=redis_port, username=redis_username, password=redis_password,
+                                decode_responses=True)
     vk_token = os.getenv('VK_ACCESS_TOKEN')
 
     vk_session = vk.VkApi(token=vk_token)
@@ -36,4 +51,11 @@ if __name__ == "__main__":
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-            echo_keyboard(event, vk_api)
+            if event.text == 'Новый вопрос':
+                pass
+            elif event.text == 'Сдаться':
+                pass
+            elif event.text == 'Мой счёт':
+                pass
+            else:
+                start(event, vk_api)
