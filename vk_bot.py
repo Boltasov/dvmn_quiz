@@ -7,9 +7,9 @@ from dotenv import load_dotenv
 
 import vk_api as vk
 from vk_api.longpoll import VkLongPoll, VkEventType
-
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-from vk_api.utils import get_random_id
+
+from quiz import get_random_question, get_answer
 
 
 logging.basicConfig(
@@ -36,6 +36,34 @@ def start(event, vk_api):
     )
 
 
+def handle_new_question_request(event, vk_api, db_connection) -> None:
+    message = event.text
+
+    question_id, question = get_random_question()
+
+    db_connection.set(event.user_id, question_id)
+
+    keyboard = VkKeyboard(one_time=True)
+
+    keyboard.add_button('Новый вопрос', color=VkKeyboardColor.PRIMARY)
+    keyboard.add_button('Сдаться', color=VkKeyboardColor.PRIMARY)
+
+    keyboard.add_line()
+    keyboard.add_button('Счёт', color=VkKeyboardColor.PRIMARY)
+
+    vk_api.messages.send(
+        user_id=event.user_id,
+        message=question,
+        random_id=random.randint(1, 1000),
+    )
+    vk_api.messages.send(
+        user_id=event.user_id,
+        message='Введите ваш ответ:',
+        random_id=random.randint(1, 1000),
+        keyboard=keyboard.get_keyboard(),
+    )
+
+
 if __name__ == "__main__":
     load_dotenv()
     redis_host = os.getenv('REDIS_HOST')
@@ -50,6 +78,8 @@ if __name__ == "__main__":
     vk_api = vk_session.get_api()
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
+        print(event)
+        print(event.)
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             if event.text == 'Новый вопрос':
                 pass

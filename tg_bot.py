@@ -47,9 +47,7 @@ def help_command(update: Update, context: CallbackContext) -> None:
 
 
 def handle_new_question_request(update: Update, context: CallbackContext, db_connection) -> None:
-    message = update.message.text
-    if message == 'Новый вопрос':
-        question_id, question = get_random_question()
+    question_id, question = get_random_question()
 
     db_connection.set(update.message.chat_id, question_id)
 
