@@ -18,7 +18,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# class syntax
 class State(Enum):
     MENU = 1
     ANSWER = 2
