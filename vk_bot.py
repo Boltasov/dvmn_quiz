@@ -4,6 +4,7 @@ import os
 import redis
 
 from dotenv import load_dotenv
+from enum import Enum
 
 import vk_api as vk
 from vk_api.longpoll import VkLongPoll, VkEventType
@@ -17,6 +18,12 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+
+class State(Enum):
+    MENU = 1
+    ANSWER = 2
+    BLUE = 3
 
 
 def start(event, vk_api):
@@ -35,8 +42,10 @@ def start(event, vk_api):
         keyboard=keyboard.get_keyboard(),
     )
 
+    return State.MENU
 
-def handle_new_question_request(event, vk_api, db_connection) -> None:
+
+def handle_new_question_request(event, vk_api, db_connection) -> State:
     message = event.text
 
     question_id, question = get_random_question()
@@ -63,6 +72,8 @@ def handle_new_question_request(event, vk_api, db_connection) -> None:
         keyboard=keyboard.get_keyboard(),
     )
 
+    return State.ANSWER
+
 
 if __name__ == "__main__":
     load_dotenv()
@@ -79,13 +90,19 @@ if __name__ == "__main__":
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
         print(event)
-        print(event.)
+        print(event.type)
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+            if state == State.ANSWER:
+                if event.text == 'Сдаться':
+                    pass
+                    continue
+                else:
+                    pass  # check answer
+                    continue
+
             if event.text == 'Новый вопрос':
-                pass
-            elif event.text == 'Сдаться':
-                pass
+                state = handle_new_question_request(event, vk_api, db_connection)
             elif event.text == 'Мой счёт':
                 pass
             else:
-                start(event, vk_api)
+                state = start(event, vk_api)
