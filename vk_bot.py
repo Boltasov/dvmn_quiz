@@ -152,6 +152,7 @@ if __name__ == "__main__":
             match state:
                 case State.UNDEFINED:
                     state = start(event, vk_api)
+                    continue
                 case State.MENU:
                     if event.message == 'Новый вопрос':
                         state = handle_new_question_request(event, vk_api, db_connection)
