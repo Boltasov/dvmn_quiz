@@ -11,10 +11,10 @@ def get_quiz():
     pair = {}
     for part in quiz_parts:
         if r'Вопрос ' in part:
-            pair['question'] = part.replace('\n', '')
+            pair['question'] = part.replace('\n', ' ')
             continue
         if 'Ответ:' in part:
-            answer_text = part.split(':')[1].replace('\n', '')
+            answer_text = part.split(':')[1].replace('\n', ' ')
             pair['answer'] = answer_text
             questions_and_answers.append(pair)
             pair = {}

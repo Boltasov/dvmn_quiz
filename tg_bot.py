@@ -24,7 +24,7 @@ class State(Enum):
     BLUE = 3
 
 
-def start(update: Update, context: CallbackContext) -> None:
+def start(update: Update, context: CallbackContext) -> State:
     """Send a message when the command /start is issued."""
     user = update.effective_user
 
@@ -40,12 +40,7 @@ def start(update: Update, context: CallbackContext) -> None:
     return State.MENU
 
 
-def help_command(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
-
-
-def handle_new_question_request(update: Update, context: CallbackContext, db_connection) -> None:
+def handle_new_question_request(update: Update, context: CallbackContext, db_connection) -> State:
     question_id, question = get_random_question()
 
     db_connection.set(update.message.chat_id, question_id)
@@ -56,7 +51,7 @@ def handle_new_question_request(update: Update, context: CallbackContext, db_con
     return State.ANSWER
 
 
-def handle_solution_attempt(update: Update, context: CallbackContext, db_connection) -> None:
+def handle_solution_attempt(update: Update, context: CallbackContext, db_connection) -> State:
     message = update.message.text
 
     question_id = int(db_connection.get(update.message.chat_id))
@@ -78,7 +73,7 @@ def handle_solution_attempt(update: Update, context: CallbackContext, db_connect
     return State.MENU
 
 
-def handle_give_up(update: Update, context: CallbackContext, db_connection) -> None:
+def handle_give_up(update: Update, context: CallbackContext, db_connection) -> State:
     question_id = int(db_connection.get(update.message.chat_id))
 
     right_answer = get_answer(question_id)
@@ -93,7 +88,7 @@ def handle_give_up(update: Update, context: CallbackContext, db_connection) -> N
     return State.ANSWER
 
 
-def main() -> None:
+if __name__ == "__main__":
     """Start the bot."""
     load_dotenv()
 
@@ -106,15 +101,9 @@ def main() -> None:
                                 decode_responses=True)
 
     tg_token = os.getenv('TG_TOKEN')
-    # Create the Updater and pass it your bot's token.
     updater = Updater(tg_token)
 
-    # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
-
-    # on different commands - answer in Telegram
-    #dispatcher.add_handler(CommandHandler("start", start))
-    #dispatcher.add_handler(CommandHandler("help", help_command))
 
     handle_new_question_request_db = partial(handle_new_question_request, db_connection=db_connection)
     handle_solution_attempt_db = partial(handle_solution_attempt, db_connection=db_connection)
@@ -134,7 +123,3 @@ def main() -> None:
 
     updater.start_polling()
     updater.idle()
-
-
-if __name__ == '__main__':
-    main()
