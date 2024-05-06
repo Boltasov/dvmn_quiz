@@ -3,8 +3,10 @@ import os
 
 
 def get_quiz():
-    quiz_file = os.path.join('quiz-questions', '1vs1200.txt')
-    with open(quiz_file, 'r', encoding='KOI8-R') as my_file:
+    quiz_directory = 'quiz-questions'
+    quiz_file = random.choice(os.listdir(quiz_directory))
+    quiz_path = os.path.join(quiz_directory, quiz_file)
+    with open(quiz_path, 'r', encoding='KOI8-R') as my_file:
         file_contents = my_file.read()
 
     quiz_parts = file_contents.split('\n\n')
