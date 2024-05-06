@@ -1,8 +1,10 @@
 import random
+import os
 
 
 def get_quiz():
-    with open("quiz-questions/1vs1200.txt", "r", encoding="KOI8-R") as my_file:
+    quiz_file = os.path.join('quiz-questions', '1vs1200.txt')
+    with open(quiz_file, 'r', encoding='KOI8-R') as my_file:
         file_contents = my_file.read()
 
     quiz_parts = file_contents.split('\n\n')
