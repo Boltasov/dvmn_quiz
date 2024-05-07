@@ -3,9 +3,10 @@ import os
 
 
 def get_quiz():
+    abs_path = os.path.abspath('')
     quiz_directory = 'quiz-questions'
     quiz_file = random.choice(os.listdir(quiz_directory))
-    quiz_path = os.path.join(quiz_directory, quiz_file)
+    quiz_path = os.path.join(abs_path, quiz_directory, quiz_file)
     with open(quiz_path, 'r', encoding='KOI8-R') as my_file:
         file_contents = my_file.read()
 
