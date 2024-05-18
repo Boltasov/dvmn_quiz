@@ -41,9 +41,10 @@ def start(update: Update, context: CallbackContext) -> State:
 
 
 def handle_new_question_request(update: Update, context: CallbackContext, db_connection) -> State:
-    question_id, question = get_random_question()
+    question_id, question, quiz_file = get_random_question()
 
     db_connection.set(update.message.chat_id, question_id)
+    context.user_data['quiz_file'] = quiz_file
 
     update.message.reply_text(question)
     update.message.reply_text('Введите ваш ответ:')
@@ -55,7 +56,7 @@ def handle_solution_attempt(update: Update, context: CallbackContext, db_connect
     message = update.message.text
 
     question_id = int(db_connection.get(update.message.chat_id))
-    right_answer = get_answer(question_id)
+    right_answer = get_answer(question_id, context.user_data['quiz_file'])
 
     if message == right_answer:
         result = 'Верно! Поздравляю! Для следующего вопроса нажми «Новый вопрос»'
@@ -76,9 +77,10 @@ def handle_solution_attempt(update: Update, context: CallbackContext, db_connect
 def handle_give_up(update: Update, context: CallbackContext, db_connection) -> State:
     question_id = int(db_connection.get(update.message.chat_id))
 
-    right_answer = get_answer(question_id)
+    right_answer = get_answer(question_id, context.user_data['quiz_file'])
 
-    question_id, question = get_random_question()
+    question_id, question, quiz_file = get_random_question()
+    context.user_data['quiz_file'] = quiz_file
     db_connection.set(update.message.chat_id, question_id)
 
     update.message.reply_text(f'Правильный ответ: {right_answer}')
