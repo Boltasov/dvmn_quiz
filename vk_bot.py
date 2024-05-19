@@ -52,8 +52,8 @@ def start(event, vk_api):
     return State.MENU
 
 
-def handle_new_question_request(event, vk_api, db_connection) -> State:
-    question_id, question = get_random_question()
+def handle_new_question_request(event, vk_api, db_connection):
+    question_id, question, quiz_file = get_random_question()
 
     db_connection.set(event.user_id, question_id)
 
@@ -71,15 +71,15 @@ def handle_new_question_request(event, vk_api, db_connection) -> State:
         keyboard=keyboard.get_keyboard(),
     )
 
-    return State.ANSWER
+    return State.ANSWER, quiz_file
 
 
-def handle_give_up(event, vk_api, db_connection) -> State:
+def handle_give_up(event, vk_api, db_connection, quiz_file):
     question_id = int(db_connection.get(event.user_id))
 
-    right_answer = get_answer(question_id)
+    right_answer = get_answer(question_id, quiz_file)
 
-    question_id, question = get_random_question()
+    question_id, question, quiz_file = get_random_question()
     db_connection.set(event.user_id, question_id)
 
     keyboard = get_keyboard()
@@ -101,14 +101,14 @@ def handle_give_up(event, vk_api, db_connection) -> State:
         keyboard=keyboard.get_keyboard(),
     )
 
-    return State.ANSWER
+    return State.ANSWER, quiz_file
 
 
-def handle_solution_attempt(event, vk_api, db_connection) -> State:
+def handle_solution_attempt(event, vk_api, db_connection, quiz_file):
     message = event.text
 
     question_id = int(db_connection.get(event.user_id))
-    right_answer = get_answer(question_id)
+    right_answer = get_answer(question_id, quiz_file)
 
     if message == right_answer:
         result = 'Верно! Поздравляю! Для следующего вопроса нажми «Новый вопрос»'
@@ -155,15 +155,15 @@ if __name__ == "__main__":
                     continue
                 case State.MENU:
                     if event.message == 'Новый вопрос':
-                        state = handle_new_question_request(event, vk_api, db_connection)
+                        state, quiz_file = handle_new_question_request(event, vk_api, db_connection)
                         continue
                     else:
                         continue
                 case State.ANSWER:
                     if event.text == 'Сдаться':
-                        state = handle_give_up(event, vk_api, db_connection)
+                        state, quiz_file = handle_give_up(event, vk_api, db_connection, quiz_file)
                         continue
                     else:
-                        state = handle_solution_attempt(event, vk_api, db_connection)
+                        state = handle_solution_attempt(event, vk_api, db_connection, quiz_file)
                         continue
 
