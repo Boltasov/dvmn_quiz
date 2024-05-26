@@ -2,9 +2,9 @@ import random
 import os
 
 
-def get_quiz(quiz_file=''):
+def get_quiz(quiz_dir='quiz-questions', quiz_file=''):
     abs_path = os.path.abspath('')
-    quiz_directory = os.path.join(abs_path, 'quiz-questions')
+    quiz_directory = os.path.join(abs_path, quiz_dir)
 
     if len(quiz_file) < 1:
         quiz_file = random.choice(os.listdir(quiz_directory))
@@ -30,16 +30,16 @@ def get_quiz(quiz_file=''):
     return questions_and_answers, quiz_file
 
 
-def get_random_question(quiz_file=''):
-    quiz, quiz_file = get_quiz(quiz_file)
+def get_random_question(quiz_dir, quiz_file=''):
+    quiz, quiz_file = get_quiz(quiz_dir, quiz_file)
     question_id = random.randint(0, len(quiz))
 
     question = quiz[question_id]['question']
     return question_id, question, quiz_file
 
 
-def get_answer(question_id, quiz_file):
-    quiz, _ = get_quiz(quiz_file)
+def get_answer(question_id, quiz_file, quiz_dir):
+    quiz, _ = get_quiz(quiz_dir=quiz_dir, quiz_file=quiz_file)
     answer = quiz[question_id]['answer']
     return answer
 

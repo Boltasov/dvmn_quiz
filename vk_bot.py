@@ -52,8 +52,8 @@ def start(event, vk_api):
     return State.MENU
 
 
-def handle_new_question_request(event, vk_api, db_connection):
-    question_id, question, quiz_file = get_random_question()
+def handle_new_question_request(event, vk_api, db_connection, quiz_dir):
+    question_id, question, quiz_file = get_random_question(quiz_dir=quiz_dir)
 
     db_connection.set(event.user_id, question_id)
 
@@ -74,12 +74,12 @@ def handle_new_question_request(event, vk_api, db_connection):
     return State.ANSWER, quiz_file
 
 
-def handle_give_up(event, vk_api, db_connection, quiz_file):
+def handle_give_up(event, vk_api, db_connection, quiz_file, quiz_dir):
     question_id = int(db_connection.get(event.user_id))
 
-    right_answer = get_answer(question_id, quiz_file)
+    right_answer = get_answer(question_id, quiz_file, quiz_dir=quiz_dir)
 
-    question_id, question, quiz_file = get_random_question()
+    question_id, question, quiz_file = get_random_question(quiz_dir=quiz_dir)
     db_connection.set(event.user_id, question_id)
 
     keyboard = get_keyboard()
@@ -104,11 +104,11 @@ def handle_give_up(event, vk_api, db_connection, quiz_file):
     return State.ANSWER, quiz_file
 
 
-def handle_solution_attempt(event, vk_api, db_connection, quiz_file):
+def handle_solution_attempt(event, vk_api, db_connection, quiz_file, quiz_dir):
     message = event.text
 
     question_id = int(db_connection.get(event.user_id))
-    right_answer = get_answer(question_id, quiz_file)
+    right_answer = get_answer(question_id, quiz_file, quiz_dir=quiz_dir)
 
     if message == right_answer:
         result = 'Верно! Поздравляю! Для следующего вопроса нажми «Новый вопрос»'
@@ -141,6 +141,7 @@ if __name__ == "__main__":
                                 decode_responses=True)
 
     state = State.UNDEFINED
+    quiz_dir = os.getenv('QUIZ_DIR')
 
     vk_token = os.getenv('VK_ACCESS_TOKEN')
     vk_session = vk.VkApi(token=vk_token)
@@ -155,15 +156,15 @@ if __name__ == "__main__":
                     continue
                 case State.MENU:
                     if event.message == 'Новый вопрос':
-                        state, quiz_file = handle_new_question_request(event, vk_api, db_connection)
+                        state, quiz_file = handle_new_question_request(event, vk_api, db_connection, quiz_dir=quiz_dir)
                         continue
                     else:
                         continue
                 case State.ANSWER:
                     if event.text == 'Сдаться':
-                        state, quiz_file = handle_give_up(event, vk_api, db_connection, quiz_file)
+                        state, quiz_file = handle_give_up(event, vk_api, db_connection, quiz_file, quiz_dir=quiz_dir)
                         continue
                     else:
-                        state = handle_solution_attempt(event, vk_api, db_connection, quiz_file)
+                        state = handle_solution_attempt(event, vk_api, db_connection, quiz_file, quiz_dir=quiz_dir)
                         continue
 

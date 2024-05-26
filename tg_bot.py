@@ -40,8 +40,8 @@ def start(update: Update, context: CallbackContext) -> State:
     return State.MENU
 
 
-def handle_new_question_request(update: Update, context: CallbackContext, db_connection) -> State:
-    question_id, question, quiz_file = get_random_question()
+def handle_new_question_request(update: Update, context: CallbackContext, db_connection, quiz_dir) -> State:
+    question_id, question, quiz_file = get_random_question(quiz_dir=quiz_dir)
 
     db_connection.set(update.message.chat_id, question_id)
     context.user_data['quiz_file'] = quiz_file
@@ -52,11 +52,11 @@ def handle_new_question_request(update: Update, context: CallbackContext, db_con
     return State.ANSWER
 
 
-def handle_solution_attempt(update: Update, context: CallbackContext, db_connection) -> State:
+def handle_solution_attempt(update: Update, context: CallbackContext, db_connection, quiz_dir) -> State:
     message = update.message.text
 
     question_id = int(db_connection.get(update.message.chat_id))
-    right_answer = get_answer(question_id, context.user_data['quiz_file'])
+    right_answer = get_answer(question_id, context.user_data['quiz_file'], quiz_dir=quiz_dir)
 
     if message == right_answer:
         result = 'Верно! Поздравляю! Для следующего вопроса нажми «Новый вопрос»'
@@ -74,12 +74,12 @@ def handle_solution_attempt(update: Update, context: CallbackContext, db_connect
     return State.MENU
 
 
-def handle_give_up(update: Update, context: CallbackContext, db_connection) -> State:
+def handle_give_up(update: Update, context: CallbackContext, db_connection, quiz_dir) -> State:
     question_id = int(db_connection.get(update.message.chat_id))
 
-    right_answer = get_answer(question_id, context.user_data['quiz_file'])
+    right_answer = get_answer(question_id, context.user_data['quiz_file'], quiz_dir)
 
-    question_id, question, quiz_file = get_random_question()
+    question_id, question, quiz_file = get_random_question(quiz_dir=quiz_dir)
     context.user_data['quiz_file'] = quiz_file
     db_connection.set(update.message.chat_id, question_id)
 
@@ -107,9 +107,16 @@ if __name__ == "__main__":
 
     dispatcher = updater.dispatcher
 
-    handle_new_question_request_db = partial(handle_new_question_request, db_connection=db_connection)
-    handle_solution_attempt_db = partial(handle_solution_attempt, db_connection=db_connection)
-    handle_give_up_db = partial(handle_give_up, db_connection=db_connection)
+    quiz_dir = os.getenv('QUIZ_DIR')
+    handle_new_question_request_db = partial(handle_new_question_request,
+                                             db_connection=db_connection,
+                                             quiz_dir=quiz_dir)
+    handle_solution_attempt_db = partial(handle_solution_attempt,
+                                         db_connection=db_connection,
+                                         quiz_dir=quiz_dir)
+    handle_give_up_db = partial(handle_give_up,
+                                db_connection=db_connection,
+                                quiz_dir=quiz_dir)
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
